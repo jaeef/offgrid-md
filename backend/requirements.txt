@@ -1,0 +1,11 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+markitdown[all]>=0.1.8b1
+# Official OCR plugin (LLM-Vision OCR for images embedded in PDF/DOCX/PPTX/XLSX).
+# Skips itself silently when no llm_client is configured, so offline use is unaffected.
+markitdown-ocr>=0.1.0
+python-multipart>=0.0.12
+pydantic>=2.8.0
+# Audio transcription backend used by MarkItDown's AudioConverter (SpeechRecognition)
+SpeechRecognition>=3.10.0
+pydub>=0.25.1
