@@ -1,77 +1,106 @@
-# MarkItDown Studio (Offline Document to Markdown Converter)
+# offgrid-md
 
-A modern, offline document-to-Markdown studio powered by **Microsoft MarkItDown**, featuring a sleek **Shadcn UI (Zinc dark/light mode)**, real-time split-screen Markdown preview, batch folder queue, and direct computer storage access.
+> Offline document → Markdown studio. Private by default. No cloud, no accounts.
 
----
+![offline](https://img.shields.io/badge/offline-100%25-black)
+![engine](https://img.shields.io/badge/engine-Microsoft_MarkItDown-blue)
+![stack](https://img.shields.io/badge/stack-React_%2B_FastAPI-red)
+![license](https://img.shields.io/badge/license-MIT-green)
 
-## Key Features
+Drop in a PDF or a Word doc, point it at a whole folder by path, or paste a snippet — get clean, LLM-ready Markdown back. Runs entirely on your machine. Direct local paths bypass upload caps entirely.
 
-1. **Powered by Microsoft MarkItDown**:
-   - Official Python engine: [github.com/microsoft/markitdown](https://github.com/microsoft/markitdown) (`markitdown[all]` + official `markitdown-ocr` plugin, plugins enabled)
-   - Converts **PDF, Word (.docx), PowerPoint (.pptx), Excel (.xlsx), Images, Audio, HTML, CSV, JSON, XML, and ZIP archives**.
-   - **Images:** without an LLM configured you get an image-metadata Markdown block (format, dimensions, source path) so output is never blank; enable **Image Captioning** in Settings (Ollama/LM Studio) for AI descriptions plus LLM-Vision OCR of embedded images.
+## Quickstart
 
-2. **100% Offline & Private** (documents):
-   - Runs locally on your machine via a FastAPI server at `http://127.0.0.1:7860`.
-   - No external API keys or internet connection required for document conversions.
-   - Exceptions: **Audio transcription** uses MarkItDown's SpeechRecognition backend (Google Web Speech API — needs internet, plus system `ffmpeg` for MP3/M4A); **Image Captioning / OCR** needs a user-supplied local LLM endpoint (e.g. Ollama).
+**Windows — double-click:**
 
-3. **Hybrid Computer File Access**:
-   - **Direct Local File Paths**: Paste or type any path on your drive (e.g. `C:\Users\...\Documents\Report.pdf`) to convert instantly without browser upload limits.
-   - **Drag & Drop**: Drop files or folders directly into the UI.
-   - **Batch Folder Queue**: Scan an entire folder recursively, convert all documents, and export as a single `.zip` or save to disk.
-
-4. **Minimal Shadcn Zinc Interface**:
-   - **Single Converter**: Drag & drop zone, direct path input, conversion speed stats, and live split-screen preview (Rendered GFM tables/code + Raw Markdown editor).
-   - **Batch Folder Queue**: Folder path scanner, conversion status table (`Pending`, `Converting`, `Success`, `Error`), token counters, and batch ZIP export.
-   - **Quick Paste Scratchpad**: Paste raw HTML, tables, or text to get instant GitHub Flavored Markdown.
-   - **Settings & Stats**: View supported formats, toggle OCR and Whisper audio transcription.
-
----
-
-## One-Click Launch (Windows)
-
-Simply double-click:
 ```bash
 start.bat
 ```
-*(or run `./start.ps1` in PowerShell)*
 
-This launcher automatically:
-1. Sets up the Python virtual environment (`.venv`).
-2. Installs `markitdown` and FastAPI dependencies.
-3. Builds the frontend UI bundle.
-4. Starts the local server and opens `http://127.0.0.1:7860` in your browser.
+Opens `http://127.0.0.1:7860` in your browser. The launcher creates `.venv`, installs Python + JS deps, builds the UI, and starts the server. That's it.
 
----
+**Manual:**
 
-## Developer / Manual Run
-
-### 1. Backend Server
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+# backend
+python -m venv .venv && .venv\Scripts\activate
 pip install -r backend\requirements.txt
-python backend\app.py
+python backend\app.py        # → http://127.0.0.1:7860
+
+# frontend (hot reload)
+npm install && npm run dev   # → http://localhost:5173 (proxies /api → :7860)
 ```
-Backend runs at `http://127.0.0.1:7860`.
 
-### 2. Frontend Development Server (Hot Reloading)
-```bash
-npm install
-npm run dev
-```
-Frontend runs at `http://localhost:5173` and proxies API calls to `http://127.0.0.1:7860`.
+## Features
 
----
-
-## Supported File Formats
-
-| Category | Supported Extensions |
+| | |
 |---|---|
-| **Office Documents** | `.docx`, `.doc`, `.pptx`, `.ppt`, `.xlsx`, `.xls` |
-| **PDF** | `.pdf` |
-| **Images** | `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.gif` |
-| **Audio** | `.mp3`, `.wav`, `.m4a`, `.ogg`, `.flac` |
-| **Data & Web** | `.html`, `.htm`, `.xml`, `.json`, `.csv`, `.tsv`, `.txt`, `.log`, `.epub` |
-| **Archives** | `.zip` (auto-extracts and converts internal files) |
+| 📄 **Single converter** | Drag & drop, direct local-path input (no upload limits), live rendered/source split preview, speed + token stats |
+| 📁 **Batch queue** | Recursive folder scan, per-file status (`pending → converting → success/error`), convert-all, ZIP export with name dedupe |
+| 📋 **Quick paste** | HTML / CSV / JSON / XML / TXT snippets → GFM instantly |
+| 🖼️ **Images that never blank** | Metadata block offline; optional Ollama/LM Studio vision captioning + LLM-Vision OCR of embedded images |
+| 🎙️ **Audio** | Speech transcription toggle (`.mp3 .wav .m4a .mp4 .ogg .flac`) |
+| 🌗 **Zinc UI** | Shadcn dark/light, responsive down to snapped-half windows |
+
+## Privacy
+
+Documents convert **100% offline** — no keys, no telemetry. Two documented exceptions:
+
+- **Audio transcription** → Google Web Speech API (needs internet + system `ffmpeg` for MP3/M4A).
+- **Image captioning / embedded-image OCR** → your own local LLM endpoint (Ollama default `http://127.0.0.1:11434/v1`).
+
+## Formats
+
+| Category | Extensions |
+|---|---|
+| Office | `.docx .doc .pptx .ppt .xlsx .xls` |
+| PDF | `.pdf` |
+| Images | `.png .jpg .jpeg .webp .bmp .gif` |
+| Audio | `.mp3 .wav .m4a .mp4 .ogg .flac` |
+| Data & web | `.html .htm .xml .json .csv .tsv .txt .log .epub` |
+| Archives | `.zip` (auto-extracts + converts contents) |
+
+Uploads capped at 100 MB/file; snippets at 500k chars; ZIP exports at 200 items.
+
+## API
+
+All routes live on `http://127.0.0.1:7860`, loopback-only, CORS-locked to local origins.
+
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Engine status, extensions, settings |
+| `POST` | `/api/convert/upload` | Convert uploaded file(s) |
+| `POST` | `/api/convert/path` | Convert local path (lists dirs) |
+| `POST` | `/api/convert/snippet` | Convert raw HTML/text |
+| `POST` | `/api/scan/dir` | Recursive folder scan |
+| `POST` | `/api/convert/batch` | Convert path list, optional `output_dir` |
+| `POST` | `/api/export/zip` | Bundle results as `.zip` |
+| `POST` | `/api/settings` | Toggles + LLM endpoint config |
+
+## Stack
+
+- **Engine** — [Microsoft MarkItDown](https://github.com/microsoft/markitdown) (`markitdown[all]` + official `markitdown-ocr` plugin)
+- **Backend** — Python, FastAPI, Uvicorn, Pydantic
+- **Frontend** — React 18, Vite 6, Tailwind v4, Shadcn/Radix, `react-markdown` + `remark-gfm`, Lucide
+
+## Project structure
+
+```
+├── backend/        # app.py (API) · converter.py (engine) · requirements.txt
+├── src/
+│   ├── components/ # Header · SingleConverter · BatchConverter · QuickPaste · MarkdownViewer · SettingsModal
+│   │   └── ui/     # button · badge · input · switch
+│   └── lib/ App.tsx main.tsx
+├── start.bat       # one-click launcher
+└── index.html      # Vite entry
+```
+
+## Contributing
+
+PRs welcome. No tests yet — manual bar is `npx tsc --noEmit`, `npx vite build`, and a 10-file golden-set convert (PDF/DOCX/PPTX/XLSX/PNG/MP3/HTML/CSV/ZIP/EPUB).
+
+## License & attribution
+
+- This project's own code is MIT — see [LICENSE](LICENSE).
+- Conversion core: [Microsoft MarkItDown](https://github.com/microsoft/markitdown) (MIT © Microsoft Corporation), used as a library dependency, not vendored. This project is not affiliated with or endorsed by Microsoft.
+- Microsoft marks follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general) — no sponsorship implied.
