@@ -35,6 +35,8 @@ interface HealthResponse {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, supportedExtensions }) => {
+  const dialogRef = React.useRef<HTMLDivElement>(null)
+  const restoreFocusRef = React.useRef<HTMLElement | null>(null)
   const [enableLlm, setEnableLlm] = React.useState(false)
   const [enableWhisper, setEnableWhisper] = React.useState(false)
   const [llmBaseUrl, setLlmBaseUrl] = React.useState('http://127.0.0.1:11434/v1')
@@ -67,7 +69,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
       applyServerState(data)
       setError(null)
     } catch (err) {
-      setError('Cannot reach the local engine at http://127.0.0.1:7860. Start the backend (start.bat) and try again.')
+      setError(`Cannot reach the local engine at ${window.location.origin}. Start the backend (start.bat) and try again.`)
     }
   }, [applyServerState])
 
@@ -77,6 +79,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
       loadSettings()
     }
   }, [isOpen, loadSettings])
+
+  // Dialog semantics: move focus inside, restore on close, close on Escape
+  React.useEffect(() => {
+    if (!isOpen) return
+    restoreFocusRef.current = document.activeElement as HTMLElement | null
+    const id = window.setTimeout(() => dialogRef.current?.focus(), 0)
+    return () => {
+      window.clearTimeout(id)
+      restoreFocusRef.current?.focus?.()
+    }
+  }, [isOpen])
+
+  const handleDialogKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation()
+      onClose()
+      return
+    }
+    if (e.key !== 'Tab' || !dialogRef.current) return
+    const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), textarea, select, [tabindex]:not([tabindex="-1"])'
+    )
+    if (focusables.length === 0) return
+    const first = focusables[0]
+    const last = focusables[focusables.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
 
   const persist = async (next: {
     enable_llm: boolean
@@ -160,17 +195,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg rounded-none border border-border bg-card shadow-2xl overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="engine-settings-title"
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
+        className="w-full max-w-lg overflow-hidden rounded-none border border-border bg-card shadow-2xl focus:outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4 bg-muted/50">
           <div className="flex items-center gap-2">
             <Sliders className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Engine Settings & Info</h2>
+            <h2 id="engine-settings-title" className="text-sm font-semibold text-foreground">Engine Settings &amp; Info</h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded-none p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="rounded-none p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Close settings"
           >
             <X className="h-4 w-4" />
           </button>
@@ -191,7 +240,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
               </span>
             </div>
             <p className="text-muted-foreground text-[11px] leading-relaxed">
-              Running 100% offline directly on your local computer via FastAPI. Documents are parsed locally with zero cloud telemetry.
+              Documents are parsed locally on this machine — files never leave your computer. One exception: audio transcription uses Google Web Speech (see below).
             </p>
           </div>
 
@@ -222,6 +271,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                   checked={enableLlm}
                   disabled={saving}
                   onCheckedChange={(v) => { setEnableLlm(v); toggleLlm(v) }}
+                  aria-label="Image captioning via vision LLM"
                 />
               </div>
 
@@ -317,6 +367,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                   checked={enableWhisper}
                   disabled={saving}
                   onCheckedChange={(v) => { setEnableWhisper(v); toggleWhisper(v) }}
+                  aria-label="Audio transcription (requires internet)"
                 />
               </div>
 
@@ -349,7 +400,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
           {/* Supported Formats */}
           <div>
             <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Supported Offline Formats ({supportedExtensions.length})
+              Supported Formats ({supportedExtensions.length})
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {supportedExtensions.map((ext) => (
@@ -361,6 +412,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                 </span>
               ))}
             </div>
+            <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
+              Every format converts locally. Audio files additionally need an internet connection for transcription
+              (Google Web Speech) — everything else is fully offline.
+            </p>
           </div>
 
           {/* Local Server info */}
@@ -369,7 +424,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
               <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
               Local Endpoint:
             </span>
-            <code className="text-foreground font-mono">http://127.0.0.1:7860</code>
+            <code className="font-mono text-foreground">{window.location.origin}</code>
           </div>
         </div>
 

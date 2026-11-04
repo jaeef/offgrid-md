@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Copy, Check, Download, FileCode, Eye, Columns } from 'lucide-react'
+import { Copy, Check, Download, FileCode, Eye, Columns, UploadCloud, HardDrive, ClipboardCopy } from 'lucide-react'
 import { Button } from './ui/button'
 
 interface MarkdownViewerProps {
@@ -59,6 +59,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
         <div className="flex items-center gap-1 rounded-none border border-border bg-muted/60 p-0.5">
           <button
             onClick={() => setViewMode('rendered')}
+            aria-pressed={viewMode === 'rendered'}
             className={`flex items-center gap-1.5 rounded-none px-2.5 py-1 text-xs font-medium transition-all ${
               viewMode === 'rendered'
                 ? 'bg-muted text-foreground shadow-sm'
@@ -70,6 +71,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
           </button>
           <button
             onClick={() => setViewMode('source')}
+            aria-pressed={viewMode === 'source'}
             className={`flex items-center gap-1.5 rounded-none px-2.5 py-1 text-xs font-medium transition-all ${
               viewMode === 'source'
                 ? 'bg-muted text-foreground shadow-sm'
@@ -81,6 +83,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
           </button>
           <button
             onClick={() => setViewMode('split')}
+            aria-pressed={viewMode === 'split'}
             className={`hidden md:flex items-center gap-1.5 rounded-none px-2.5 py-1 text-xs font-medium transition-all ${
               viewMode === 'split'
                 ? 'bg-muted text-foreground shadow-sm'
@@ -96,11 +99,13 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
         <div className="flex items-center gap-2">
           {stats && (
             <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground font-mono">
-              <span className="rounded bg-muted/60 border border-border px-2 py-0.5">
-                <span className="text-muted-foreground">Tokens:</span> <span className="text-primary font-semibold">{stats.tokens.toLocaleString()}</span>
+              <span className="rounded border border-border bg-muted/60 px-2 py-0.5" title="Estimated GPT-style token count">
+                <span className="text-muted-foreground">Tokens:</span>{' '}
+                <span className="font-semibold text-primary-readable">{stats.tokens.toLocaleString()}</span>
               </span>
-              <span className="rounded bg-muted/60 border border-border px-2 py-0.5">
-                <span className="text-muted-foreground">Words:</span> <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{stats.words.toLocaleString()}</span>
+              <span className="rounded border border-border bg-muted/60 px-2 py-0.5">
+                <span className="text-muted-foreground">Words:</span>{' '}
+                <span className="font-semibold text-success-readable">{stats.words.toLocaleString()}</span>
               </span>
               <span className="rounded bg-muted/60 border border-border px-2 py-0.5">
                 <span className="text-muted-foreground">Lines:</span> <span className="text-foreground font-semibold">{stats.lines.toLocaleString()}</span>
@@ -144,11 +149,25 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
       <div className="relative flex-1 min-h-[40vh] lg:min-h-0 overflow-hidden">
         {!markdown ? (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center text-muted-foreground">
-            <FileCode className="h-10 w-10 text-muted-foreground mb-2 opacity-50 stroke-[1.5]" />
-            <p className="text-sm font-medium text-muted-foreground">No Markdown Generated Yet</p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-              Upload a file, enter a local computer path, or paste content to see the converted Markdown.
+            <FileCode className="mb-2 h-10 w-10 stroke-[1.5] text-muted-foreground/50" aria-hidden="true" />
+            <p className="text-sm font-medium text-foreground">Nothing converted yet</p>
+            <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+              Output appears here. Get started three ways:
             </p>
+            <ul className="mt-4 space-y-1.5 text-left text-xs text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <UploadCloud className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+                Drop or browse a file in the upload card
+              </li>
+              <li className="flex items-center gap-2">
+                <HardDrive className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+                Paste an absolute path to a local file
+              </li>
+              <li className="flex items-center gap-2">
+                <ClipboardCopy className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+                Quick Paste for HTML, CSV, JSON or XML snippets
+              </li>
+            </ul>
           </div>
         ) : (
           <div className="flex min-h-[40vh] w-full lg:min-h-0 lg:h-full">
@@ -158,7 +177,10 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
                 <textarea
                   value={markdown}
                   onChange={(e) => onMarkdownChange?.(e.target.value)}
-                  className="min-h-[35vh] w-full resize-none bg-transparent font-mono text-xs leading-relaxed text-foreground focus:outline-none selection:bg-primary/20 selection:text-foreground lg:min-h-0 lg:h-full"
+                  readOnly={!onMarkdownChange}
+                  aria-readonly={!onMarkdownChange}
+                  title={onMarkdownChange ? undefined : 'Read-only preview — Export .md or Copy to edit elsewhere'}
+                  className={`min-h-[35vh] w-full resize-none bg-transparent font-mono text-xs leading-relaxed text-foreground focus:outline-none focus:ring-2 focus:ring-ring selection:bg-primary/20 selection:text-foreground lg:min-h-0 lg:h-full ${onMarkdownChange ? '' : 'cursor-default'}`}
                   placeholder="Raw markdown..."
                   spellCheck={false}
                 />

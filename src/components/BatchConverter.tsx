@@ -15,7 +15,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Badge } from './ui/badge'
 import { MarkdownViewer } from './MarkdownViewer'
-import { formatBytes } from '@/lib/utils'
+import { formatBytes, getRecentPaths, pushRecentPath, engineErrorMessage } from '@/lib/utils'
 
 interface BatchFileItem {
   name: string
@@ -45,8 +45,13 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
   const [isScanning, setIsScanning] = useState(false)
   const [isConvertingAll, setIsConvertingAll] = useState(false)
   const [files, setFiles] = useState<BatchFileItem[]>([])
-  const [activePreviewFile, setActivePreviewFile] = useState<BatchFileItem | null>(null)
+  const [activePreviewPath, setActivePreviewPath] = useState<string | null>(null)
   const [scanError, setScanError] = useState<string | null>(null)
+  const [recentPaths, setRecentPaths] = useState<string[]>(() => getRecentPaths())
+
+  const activePreviewFile = activePreviewPath
+    ? files.find((f) => f.path === activePreviewPath) ?? null
+    : null
 
   // Directory scanning
   const handleScanDirectory = async () => {
@@ -63,7 +68,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
 
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.detail || 'Could not scan directory')
+        throw new Error(data.detail || `engine-http-${response.status}`)
       }
 
       const fileItems: BatchFileItem[] = (data.files || []).map((f: any) => ({
@@ -75,11 +80,13 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
       }))
 
       setFiles(fileItems)
+      pushRecentPath(folderPath)
+      setRecentPaths(getRecentPaths())
       if (fileItems.length === 0) {
         setScanError('No supported document files found in this directory.')
       }
     } catch (err: any) {
-      setScanError(err.message || 'Failed to scan folder')
+      setScanError(engineErrorMessage(err))
     } finally {
       setIsScanning(false)
     }
@@ -100,7 +107,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
 
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.detail || 'Failed')
+        throw new Error(data.detail || `engine-http-${response.status}`)
       }
 
       setFiles((prev) =>
@@ -117,13 +124,14 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
         )
       )
     } catch (err: any) {
+      const message = engineErrorMessage(err)
       setFiles((prev) =>
         prev.map((f, i) =>
           i === index
             ? {
                 ...f,
                 status: 'error',
-                error: err.message || 'Conversion failed'
+                error: message
               }
             : f
         )
@@ -176,7 +184,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch (err) {
-      setScanError('Failed to generate ZIP export')
+      setScanError(engineErrorMessage(err))
     }
   }
 
@@ -192,28 +200,38 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           {/* Input Folder Path */}
           <div className="md:col-span-6">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
-              <FolderSearch className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <label htmlFor="batch-folder-input" className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
+              <FolderSearch className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
               Source Folder Path
             </label>
             <div className="flex gap-2">
               <Input
+                id="batch-folder-input"
                 placeholder="e.g. C:\Users\Documents\Annual_Reports"
                 value={folderPath}
                 onChange={(e) => setFolderPath(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleScanDirectory()}
                 className="text-xs font-mono"
+                list="recent-paths-batch"
+                autoComplete="off"
+                spellCheck={false}
               />
+              <datalist id="recent-paths-batch">
+                {recentPaths.map((p) => (
+                  <option key={p} value={p} />
+                ))}
+              </datalist>
               <Button
                 onClick={handleScanDirectory}
                 disabled={isScanning || !folderPath.trim()}
                 size="sm"
-                className="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
+                variant="outline"
+                className="shrink-0 border-border text-foreground text-xs font-semibold"
               >
                 {isScanning ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" aria-hidden="true" />
                 ) : (
-                  <FolderSearch className="h-3.5 w-3.5 mr-1" />
+                  <FolderSearch className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                 )}
                 Scan Folder
               </Button>
@@ -256,11 +274,14 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
                 size="icon"
                 disabled={isConvertingAll}
                 onClick={() => {
-                  setFiles([])
-                  setActivePreviewFile(null)
+                  if (window.confirm('Clear the queue? Scanned files and conversion results will be discarded.')) {
+                    setFiles([])
+                    setActivePreviewPath(null)
+                  }
                 }}
                 className="h-9 w-9 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-destructive/10"
-                title="Clear Queue"
+                title="Clear queue"
+                aria-label="Clear the conversion queue"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -289,37 +310,38 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
               Queued Documents ({files.length})
             </h3>
             {files.length > 0 && (
-              <span className="text-xs text-muted-foreground font-mono">
-                {convertedCount} / {totalFiles} Converted
+              <span className="font-mono text-xs text-muted-foreground" aria-live="polite">
+                {convertedCount} / {totalFiles} converted
               </span>
             )}
           </div>
 
           <div className="flex-1 overflow-auto">
             {files.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center p-8 text-center text-muted-foreground">
-                <FolderArchive className="h-10 w-10 text-muted-foreground mb-2 opacity-50 stroke-[1.5]" />
-                <p className="text-sm font-medium text-muted-foreground">Queue is Empty</p>
-                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                  Enter a directory path above and click &quot;Scan Folder&quot; to discover and queue documents for batch conversion.
-                </p>
-              </div>
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+              <FolderArchive className="mb-2 h-10 w-10 stroke-[1.5] text-muted-foreground/50" aria-hidden="true" />
+              <p className="text-sm font-medium text-foreground">Queue is empty</p>
+              <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+                Paste a folder path above and click &quot;Scan Folder&quot; to discover documents and queue them for batch conversion.
+              </p>
+            </div>
             ) : (
               <table className="w-full min-w-[560px] text-left text-xs">
-                <thead className="sticky top-0 bg-background/80 text-muted-foreground border-b border-border backdrop-blur-sm font-mono text-[11px]">
+                <caption className="sr-only">Documents queued for batch conversion with type, size, status, and actions</caption>
+                <thead className="sticky top-0 border-b border-border bg-background/80 font-mono text-[11px] text-muted-foreground backdrop-blur-sm">
                   <tr>
-                    <th className="py-2.5 px-4">Filename</th>
-                    <th className="py-2.5 px-3">Type</th>
-                    <th className="py-2.5 px-3">Size</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-4 text-right">Actions</th>
+                    <th scope="col" className="py-2.5 px-4">Filename</th>
+                    <th scope="col" className="py-2.5 px-3">Type</th>
+                    <th scope="col" className="py-2.5 px-3">Size</th>
+                    <th scope="col" className="py-2.5 px-3">Status</th>
+                    <th scope="col" className="py-2.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {files.map((file, idx) => (
                     <tr
                       key={file.path || idx}
-                      className={`hover:bg-muted/30 dark:hover:bg-border/30 transition-colors ${
+                      className={`transition-colors hover:bg-muted/30 ${
                         activePreviewFile?.path === file.path ? 'bg-muted/50' : ''
                       }`}
                     >
@@ -361,8 +383,8 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
                           </Badge>
                         )}
                         {file.status === 'error' && (
-                          <Badge variant="destructive" className="text-[10px] gap-1">
-                            <AlertCircle className="h-2.5 w-2.5" />
+                          <Badge variant="destructive" className="gap-1 text-[10px]" title={file.error || 'Conversion failed'}>
+                            <AlertCircle className="h-2.5 w-2.5" aria-hidden="true" />
                             Error
                           </Badge>
                         )}
@@ -373,19 +395,31 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
                           {file.status === 'pending' && (
                             <Button
                               size="sm"
-                              variant="ghost"
+                              variant="outline"
                               onClick={() => convertSingleFileInBatch(file, idx)}
-                              className="h-6 px-2 text-[11px] text-primary hover:text-primary/80"
+                              className="h-6 border-border px-2 text-[11px] text-foreground"
                             >
                               Convert
+                            </Button>
+                          )}
+                          {file.status === 'error' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => convertSingleFileInBatch(file, idx)}
+                              className="h-6 border-destructive/50 px-2 text-[11px] text-red-600 dark:text-red-400 hover:bg-destructive/10"
+                              title={file.error || 'Conversion failed'}
+                            >
+                              Retry
                             </Button>
                           )}
                           {file.status === 'success' && (
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setActivePreviewFile(file)}
-                              className="h-6 px-2 text-[11px] gap-1 border-border bg-muted/80 hover:bg-muted/80 text-foreground"
+                              onClick={() => setActivePreviewPath(file.path)}
+                              aria-pressed={activePreviewFile?.path === file.path}
+                              className="h-6 gap-1 border-border px-2 text-[11px] text-foreground"
                             >
                               <Eye className="h-3 w-3" />
                               View
@@ -405,8 +439,8 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
             <div className="flex items-center justify-between border-t border-border bg-muted/60 px-4 py-2 text-xs text-muted-foreground font-mono">
               <div className="flex items-center gap-4">
                 <span>Total: <strong className="text-foreground">{totalFiles}</strong></span>
-                <span>Converted: <strong className="text-emerald-600 dark:text-emerald-400">{convertedCount}</strong></span>
-                <span>Tokens: <strong className="text-primary">{totalTokens.toLocaleString()}</strong></span>
+                <span>Converted: <strong className="text-success-readable">{convertedCount}</strong></span>
+                <span>Tokens: <strong className="text-primary-readable">{totalTokens.toLocaleString()}</strong></span>
               </div>
             </div>
           )}

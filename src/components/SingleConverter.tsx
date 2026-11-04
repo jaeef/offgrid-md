@@ -14,7 +14,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Badge } from './ui/badge'
 import { MarkdownViewer } from './MarkdownViewer'
-import { formatBytes } from '@/lib/utils'
+import { formatBytes, getRecentPaths, pushRecentPath, engineErrorMessage } from '@/lib/utils'
 
 interface SingleConverterProps {
   apiBaseUrl?: string
@@ -51,6 +51,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
     lines: number
     tokens: number
   } | undefined>()
+  const [recentPaths, setRecentPaths] = useState<string[]>(() => getRecentPaths())
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -89,7 +90,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
       })
 
       if (!response.ok) {
-        throw new Error(`Upload conversion failed (${response.statusText})`)
+        throw new Error(`engine-http-${response.status}`)
       }
 
       const data = await response.json()
@@ -118,7 +119,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
           : null
       )
     } catch (err: any) {
-      setError(err.message || 'An error occurred during conversion')
+      setError(engineErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -140,7 +141,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
 
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.detail || 'Could not convert path')
+        throw new Error(data.detail || `engine-http-${response.status}`)
       }
 
       if (data.type === 'directory') {
@@ -162,8 +163,10 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
         )
       }
       setStats(data.stats)
+      pushRecentPath(localPath)
+      setRecentPaths(getRecentPaths())
     } catch (err: any) {
-      setError(err.message || 'Failed to convert path')
+      setError(engineErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -200,15 +203,17 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
             </p>
           </div>
 
-          <div
+          <button
+            type="button"
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-none border-2 border-dashed p-8 text-center transition-all ${
+            aria-label="Browse for a document to convert"
+            className={`group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-none border-2 border-dashed p-8 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
               dragOver
                 ? 'border-primary bg-primary/10'
-                : 'border-border bg-muted/50 hover:border-border dark:hover:border-zinc-700 hover:bg-white/60 dark:hover:bg-zinc-900/60'
+                : 'border-border bg-muted/50 hover:border-foreground/30 hover:bg-muted/70'
             }`}
           >
             <input
@@ -216,42 +221,31 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
               ref={fileInputRef}
               onChange={(e) => handleFileUpload(e.target.files)}
               className="hidden"
+              aria-hidden="true"
+              tabIndex={-1}
             />
-            <div className="rounded-full bg-card border border-border p-3 mb-3 text-muted-foreground group-hover:text-primary group-hover:border-primary/40 transition-colors">
+            <div className="pointer-events-none mb-3 rounded-full border border-border bg-card p-3 text-muted-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
               <UploadCloud className="h-6 w-6" />
             </div>
-            <p className="text-sm font-medium text-foreground">
+            <p className="pointer-events-none text-sm font-medium text-foreground">
               Drop document here, or <span className="text-primary underline">browse</span>
             </p>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Supports PDF, DOCX, XLSX, PPTX, Images, Audio, ZIP & more
+            <p className="pointer-events-none mt-1 text-[11px] text-muted-foreground">
+              Supports PDF, DOCX, XLSX, PPTX, Images, Audio, ZIP &amp; more
             </p>
 
-            {/* Badges of supported formats */}
-            <div className="mt-4 flex flex-wrap justify-center gap-1.5 opacity-85">
-              <span className="inline-flex items-center gap-1 rounded bg-red-950/40 border border-red-900/50 px-1.5 py-0.5 text-[10px] font-mono text-red-600 dark:text-red-400">
-                PDF
-              </span>
-              <span className="inline-flex items-center gap-1 rounded bg-primary/10 border border-primary/40 px-1.5 py-0.5 text-[10px] font-mono text-primary">
-                DOCX
-              </span>
-              <span className="inline-flex items-center gap-1 rounded bg-emerald-950/40 border border-emerald-900/50 px-1.5 py-0.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
-                XLSX
-              </span>
-              <span className="inline-flex items-center gap-1 rounded bg-accent/10 border border-accent/40 px-1.5 py-0.5 text-[10px] font-mono text-accent">
-                PPTX
-              </span>
-              <span className="inline-flex items-center gap-1 rounded bg-purple-950/40 border border-purple-900/50 px-1.5 py-0.5 text-[10px] font-mono text-purple-600 dark:text-purple-400">
-                IMG/OCR
-              </span>
-              <span className="inline-flex items-center gap-1 rounded bg-cyan-950/40 border border-cyan-900/50 px-1.5 py-0.5 text-[10px] font-mono text-cyan-600 dark:text-cyan-400">
-                AUDIO
-              </span>
-              <span className="inline-flex items-center gap-1 rounded bg-yellow-950/40 border border-yellow-900/50 px-1.5 py-0.5 text-[10px] font-mono text-yellow-600 dark:text-yellow-400">
-                ZIP
-              </span>
+            {/* Format hints */}
+            <div className="pointer-events-none mt-4 flex flex-wrap justify-center gap-1.5">
+              {['PDF', 'DOCX', 'XLSX', 'PPTX', 'ZIP'].map((fmt) => (
+                <span
+                  key={fmt}
+                  className="inline-flex items-center rounded-none border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                >
+                  {fmt}
+                </span>
+              ))}
             </div>
-          </div>
+          </button>
         </div>
 
         {/* Local Computer Path Box */}
@@ -267,14 +261,24 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
           </div>
 
           <div className="flex gap-2">
+            <label htmlFor="local-path-input" className="sr-only">Direct computer path</label>
             <Input
+              id="local-path-input"
               type="text"
               placeholder="e.g. C:\Users\Documents\quarterly_report.pdf"
               value={localPath}
               onChange={(e) => setLocalPath(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleConvertPath()}
               className="text-xs font-mono"
+              list="recent-paths-single"
+              autoComplete="off"
+              spellCheck={false}
             />
+            <datalist id="recent-paths-single">
+              {recentPaths.map((p) => (
+                <option key={p} value={p} />
+              ))}
+            </datalist>
             <Button
               onClick={handleConvertPath}
               disabled={isLoading || !localPath.trim()}
@@ -305,15 +309,15 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
         )}
 
         {warning && !error && (
-          <div className="flex items-start gap-2.5 rounded-none border border-accent/30 bg-accent/10 p-3 text-xs text-accent">
-            <AlertCircle className="h-4 w-4 shrink-0 text-accent mt-0.5" />
+          <div className="flex items-start gap-2.5 rounded-none border border-accent/40 bg-accent/10 p-3 text-xs">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-accent-readable" />
             <div className="flex-1">
-              <p className="font-semibold text-accent">Empty Result</p>
-              <p className="mt-0.5 text-accent/90">{warning}</p>
+              <p className="font-semibold text-accent-readable">Empty Result</p>
+              <p className="mt-0.5 text-accent-readable/90">{warning}</p>
             </div>
             <button
               onClick={() => setWarning(null)}
-              className="rounded p-0.5 text-accent hover:text-accent/80 hover:bg-accent/20 transition-colors"
+              className="rounded p-0.5 text-accent-readable transition-colors hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Dismiss"
             >
               <X className="h-3.5 w-3.5" />
