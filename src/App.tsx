@@ -19,10 +19,13 @@ export const App: React.FC = () => {
   ])
 
   // Check backend server health (skipped while the tab is hidden)
+  // Cold start shows 'checking' only until first fetch settles; retry from banner.
   const checkHealth = useCallback(async () => {
     if (document.hidden) return
+    const ctrl = new AbortController()
+    const timeout = setTimeout(() => ctrl.abort(), 5000)
     try {
-      const res = await fetch('/api/health')
+      const res = await fetch('/api/health', { signal: ctrl.signal })
       if (res.ok) {
         const data = await res.json()
         setServerStatus('connected')
@@ -34,6 +37,8 @@ export const App: React.FC = () => {
       }
     } catch (err) {
       setServerStatus('offline')
+    } finally {
+      clearTimeout(timeout)
     }
   }, [])
 

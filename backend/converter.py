@@ -219,6 +219,22 @@ class MarkItDownService:
         return error
 
     def _calculate_stats(self, text: str) -> Dict[str, int]:
+        """Compute stats from text.
+
+        - words: whitespace-tokenized (CJK case split into chunks, matching UI)
+        - characters: Unicode code-point count (not bytes)
+        - lines: number of lines, 0 for empty input (splitlines gives 0 for '')
+        - tokens: GPT-style estimate via chars/4 heuristic, marked as estimated in UI.
+          Backend value kept; frontend derives display stats client-side for edits.
+        Duration & token flow is measured with time.time() and int(chars/4) — unchanged.
+        """
+        if not text:
+            return {
+                "words": 0,
+                "characters": 0,
+                "lines": 0,
+                "tokens": 0
+            }
         words = len(text.split())
         chars = len(text)
         lines = len(text.splitlines())

@@ -25,6 +25,19 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   const [viewMode, setViewMode] = useState<'rendered' | 'source' | 'split'>('rendered')
   const [copied, setCopied] = useState(false)
 
+  // Display stats must match current markdown, not stale backend props.
+  // Backend tokens = chars/4 heuristic — keep same formula client-side so edit + convert agree.
+  const displayStats = React.useMemo(() => {
+    if (!markdown) return stats
+    const words = markdown ? markdown.split(/\s+/).filter(Boolean).length : 0
+    return {
+      words,
+      characters: markdown.length,
+      lines: markdown ? markdown.split('\n').length : 0,
+      tokens: markdown ? Math.floor(markdown.length / 4) : 0
+    }
+  }, [markdown, stats])
+
   const handleCopy = async () => {
     if (!markdown) return
     try {
@@ -99,16 +112,17 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
         <div className="flex items-center gap-2">
           {stats && (
             <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground font-mono">
-              <span className="rounded border border-border bg-muted/60 px-2 py-0.5" title="Estimated GPT-style token count">
+              <span className="rounded border border-border bg-muted/60 px-2 py-0.5" title="Estimated GPT-style token count (backend chars/4 heuristic)">
                 <span className="text-muted-foreground">Tokens:</span>{' '}
-                <span className="font-semibold text-primary-readable">{stats.tokens.toLocaleString()}</span>
+                <span className="font-semibold text-primary-readable">{displayStats?.tokens.toLocaleString()}</span>
+                <span className="ml-1 text-[10px]">est.</span>
               </span>
               <span className="rounded border border-border bg-muted/60 px-2 py-0.5">
                 <span className="text-muted-foreground">Words:</span>{' '}
-                <span className="font-semibold text-success-readable">{stats.words.toLocaleString()}</span>
+                <span className="font-semibold text-success-readable">{displayStats?.words.toLocaleString()}</span>
               </span>
               <span className="rounded bg-muted/60 border border-border px-2 py-0.5">
-                <span className="text-muted-foreground">Lines:</span> <span className="text-foreground font-semibold">{stats.lines.toLocaleString()}</span>
+                <span className="text-muted-foreground">Lines:</span> <span className="text-foreground font-semibold">{displayStats?.lines.toLocaleString()}</span>
               </span>
             </div>
           )}

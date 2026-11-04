@@ -188,10 +188,20 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
     }
   }
 
-  // Calculate summary stats
+  // Calculate summary stats — derived from current file markdown, never stale prop cache.
+  // Matches server token rule (chars/4) so totals equal sum of per-file tokens at same moment.
+  const convertedFiles = files.filter((f) => f.status === 'success')
   const totalFiles = files.length
-  const convertedCount = files.filter((f) => f.status === 'success').length
-  const totalTokens = files.reduce((acc, curr) => acc + (curr.stats?.tokens || 0), 0)
+  const convertedCount = convertedFiles.length
+  const totalTokens = convertedFiles.reduce((acc, curr) => {
+    const md = curr.markdown ?? ''
+    return acc + Math.floor(md.length / 4)
+  }, 0)
+  const totalWords = convertedFiles.reduce((acc, curr) => {
+    const md = curr.markdown ?? ''
+    return acc + (md ? md.split(/\s+/).filter(Boolean).length : 0)
+  }, 0)
+  const totalChars = convertedFiles.reduce((acc, curr) => acc + ((curr.markdown ?? '').length), 0)
 
   return (
     <div className="flex flex-col gap-4 p-4 max-w-7xl mx-auto lg:h-[calc(100vh-4.5rem)]">
@@ -434,13 +444,15 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
             )}
           </div>
 
-          {/* Bottom Summary Bar */}
+          {/* Bottom Summary Bar — recomputed from CURRENT converted files; no stale cache rollup */}
           {files.length > 0 && (
             <div className="flex items-center justify-between border-t border-border bg-muted/60 px-4 py-2 text-xs text-muted-foreground font-mono">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                 <span>Total: <strong className="text-foreground">{totalFiles}</strong></span>
                 <span>Converted: <strong className="text-success-readable">{convertedCount}</strong></span>
-                <span>Tokens: <strong className="text-primary-readable">{totalTokens.toLocaleString()}</strong></span>
+                <span title="Estimated tokens, chars/4 of current converted markdown">Tokens (est.): <strong className="text-primary-readable">{totalTokens.toLocaleString()}</strong></span>
+                <span>Words: <strong className="text-foreground">{totalWords.toLocaleString()}</strong></span>
+                <span>Chars: <strong className="text-foreground">{totalChars.toLocaleString()}</strong></span>
               </div>
             </div>
           )}
