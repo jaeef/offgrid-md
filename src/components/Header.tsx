@@ -41,15 +41,15 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex shrink-0 items-center gap-2.5">
           <div
             aria-hidden="true"
-            className="flex h-8 w-8 items-center justify-center bg-primary shadow-[2px_2px_0_0_var(--border)]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow"
           >
-            <span className="font-mono text-sm font-bold text-primary-foreground">M</span>
+            <span className="font-serif text-base font-semibold leading-none text-primary-foreground">M</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold tracking-tight text-foreground">
+            <span className="font-serif text-base font-semibold text-foreground">
               MarkItDown
             </span>
-            <span className="hidden rounded-none bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground min-[400px]:inline">
+            <span className="hidden rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground min-[400px]:inline">
               v0.1 Studio
             </span>
           </div>
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Navigation Tabs — full-width row on small screens */}
         <nav
           aria-label="Primary"
-          className="order-3 grid w-full grid-cols-3 gap-1 border border-border bg-card/60 p-1 sm:order-none sm:flex sm:w-auto sm:gap-0 sm:space-x-1"
+          className="order-3 grid w-full grid-cols-3 gap-1 rounded-lg border border-border bg-card/70 p-1 sm:order-none sm:flex sm:w-auto sm:gap-0 sm:space-x-1"
         >
           {TABS.map(({ id, short, label, icon: Icon }) => {
             const active = activeTab === id
@@ -67,10 +67,10 @@ export const Header: React.FC<HeaderProps> = ({
                 key={id}
                 onClick={() => setActiveTab(id)}
                 aria-current={active ? 'page' : undefined}
-                className={`flex h-9 shrink-0 items-center justify-center gap-2 rounded-none px-2 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-8 sm:justify-start sm:px-3 sm:text-xs ${
+                className={`flex h-9 shrink-0 items-center justify-center gap-2 rounded-md px-2 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-8 sm:justify-start sm:px-3 sm:text-xs ${
                   active
                     ? 'bg-muted text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5 text-primary" aria-hidden="true" />

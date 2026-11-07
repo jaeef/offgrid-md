@@ -192,14 +192,14 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
       {/* Left Column: Input & Controls (5 Cols) */}
       <div className="flex flex-col gap-4 lg:col-span-5 lg:h-full lg:overflow-y-auto">
         {/* Upload Card */}
-        <div className="rounded-none border border-border bg-card/60 p-5 backdrop-blur-sm">
-          <div className="mb-3">
-            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <div className="mb-3 border-b border-border pb-2">
+            <h2 className="flex items-center gap-2 font-serif text-base font-semibold text-foreground">
               <UploadCloud className="h-4 w-4 text-primary" />
               Document Upload
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Drag & drop any supported file or select from your computer
+            <p className="mt-1 text-xs text-muted-foreground">
+              Drag &amp; drop any supported file or select from your computer
             </p>
           </div>
 
@@ -210,10 +210,10 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
             onDrop={onDrop}
             onClick={() => fileInputRef.current?.click()}
             aria-label="Browse for a document to convert"
-            className={`group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-none border-2 border-dashed p-8 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+            className={`group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
               dragOver
                 ? 'border-primary bg-primary/10'
-                : 'border-border bg-muted/50 hover:border-foreground/30 hover:bg-muted/70'
+                : 'border-input bg-muted/40 hover:border-primary/40 hover:bg-muted/70'
             }`}
           >
             <input
@@ -239,7 +239,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
               {['PDF', 'DOCX', 'XLSX', 'PPTX', 'ZIP'].map((fmt) => (
                 <span
                   key={fmt}
-                  className="inline-flex items-center rounded-none border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                  className="inline-flex items-center rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
                 >
                   {fmt}
                 </span>
@@ -249,9 +249,9 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
         </div>
 
         {/* Local Computer Path Box */}
-        <div className="rounded-none border border-border bg-card/60 p-5 backdrop-blur-sm">
-          <div className="mb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <div className="mb-2 border-b border-border pb-2">
+            <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
               Direct Computer Path
             </h3>
@@ -292,7 +292,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
 
         {/* Active File Info & Error Status */}
         {error && (
-          <div className="flex items-start gap-2.5 rounded-none border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+          <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
             <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
             <div className="flex-1">
               <p className="font-semibold text-red-800 dark:text-red-200">Conversion Error</p>
@@ -309,7 +309,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
         )}
 
         {warning && !error && (
-          <div className="flex items-start gap-2.5 rounded-none border border-accent/40 bg-accent/10 p-3 text-xs">
+          <div className="flex items-start gap-2.5 rounded-lg border border-accent/40 bg-accent/10 p-3 text-xs">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-accent-readable" />
             <div className="flex-1">
               <p className="font-semibold text-accent-readable">Empty Result</p>
@@ -326,7 +326,7 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
         )}
 
         {isLoading && (
-          <div className="flex items-center gap-3 rounded-none border border-primary/30 bg-primary/10 p-4 text-xs text-primary">
+          <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/10 p-4 text-xs text-primary">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <div>
               <p className="font-semibold text-primary">Processing with MarkItDown...</p>
@@ -338,10 +338,10 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
         )}
 
         {currentFile && !isLoading && !error && (
-          <div className="rounded-none border border-border bg-card/70 p-4">
+          <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 overflow-hidden">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none bg-muted text-primary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="truncate">

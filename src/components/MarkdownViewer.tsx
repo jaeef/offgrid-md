@@ -65,15 +65,15 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   }
 
   return (
-    <div className="flex min-h-[50vh] lg:h-full flex-col rounded-none border border-border bg-card/60 backdrop-blur-sm overflow-hidden shadow-sm">
+    <div className="flex min-h-[50vh] lg:h-full flex-col overflow-hidden rounded-lg border border-border bg-card">
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card/80 px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-4 py-2.5">
         {/* Left: View Mode Switches */}
-        <div className="flex items-center gap-1 rounded-none border border-border bg-muted/60 p-0.5">
+        <div className="flex items-center gap-1 rounded-md border border-border bg-muted/60 p-0.5">
           <button
             onClick={() => setViewMode('rendered')}
             aria-pressed={viewMode === 'rendered'}
-            className={`flex items-center gap-1.5 rounded-none px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-all ${
               viewMode === 'rendered'
                 ? 'bg-muted text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -85,7 +85,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
           <button
             onClick={() => setViewMode('source')}
             aria-pressed={viewMode === 'source'}
-            className={`flex items-center gap-1.5 rounded-none px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-all ${
               viewMode === 'source'
                 ? 'bg-muted text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -97,7 +97,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
           <button
             onClick={() => setViewMode('split')}
             aria-pressed={viewMode === 'split'}
-            className={`hidden md:flex items-center gap-1.5 rounded-none px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`hidden md:flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-all ${
               viewMode === 'split'
                 ? 'bg-muted text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'

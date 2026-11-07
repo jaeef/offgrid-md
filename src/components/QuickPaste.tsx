@@ -88,11 +88,11 @@ export const QuickPaste: React.FC<QuickPasteProps> = ({ apiBaseUrl = '' }) => {
     <div className="grid grid-cols-1 lg:h-[calc(100vh-4.5rem)] lg:grid-cols-12 gap-4 p-4 max-w-7xl mx-auto">
       {/* Left Column: Input Scratchpad (5 cols) */}
       <div className="flex flex-col gap-3 lg:col-span-5 h-[60vh] lg:h-full lg:overflow-hidden">
-        <div className="flex flex-col h-full rounded-none border border-border bg-card/60 p-4 backdrop-blur-sm">
+        <div className="flex flex-col h-full rounded-lg border border-border bg-card p-4">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <div>
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <h2 className="flex items-center gap-1.5 font-serif text-base font-semibold text-foreground">
                 <ClipboardCopy className="h-4 w-4 text-accent" />
                 Raw Input Scratchpad
               </h2>
@@ -119,7 +119,7 @@ export const QuickPaste: React.FC<QuickPasteProps> = ({ apiBaseUrl = '' }) => {
                 key={type}
                 onClick={() => setContentType(type)}
                 aria-pressed={contentType === type}
-                className={`rounded border px-2 py-1.5 font-mono text-[11px] uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`rounded-md border px-2 py-1.5 font-mono text-[11px] uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   contentType === type
                     ? 'border-accent bg-accent text-accent-foreground'
                     : 'border-border bg-muted/50 text-muted-foreground hover:text-foreground'
@@ -137,7 +137,7 @@ export const QuickPaste: React.FC<QuickPasteProps> = ({ apiBaseUrl = '' }) => {
               onChange={(e) => setContent(e.target.value)}
               placeholder="Paste HTML, table code, or text here..."
               aria-label="Raw input content"
-              className="h-full w-full resize-none rounded-none border border-border bg-muted/60 p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring selection:bg-primary/20 selection:text-foreground"
+              className="h-full w-full resize-none rounded-lg border border-border bg-muted/50 p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring selection:bg-primary/20 selection:text-foreground"
               spellCheck={false}
             />
             <div className="flex items-center justify-between pt-1.5 text-[10px] font-mono text-muted-foreground">
@@ -149,12 +149,12 @@ export const QuickPaste: React.FC<QuickPasteProps> = ({ apiBaseUrl = '' }) => {
           {/* Action button */}
           <div className="pt-3 space-y-2">
             {error && (
-              <div role="alert" className="flex items-start gap-2 rounded-none border border-destructive/40 bg-destructive/10 p-2.5 text-[11px] text-red-700 dark:text-red-300">
+              <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-2.5 text-[11px] text-red-700 dark:text-red-300">
                 <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" aria-hidden="true" />
                 <span className="flex-1">{error}</span>
                 <button
                   onClick={() => setError(null)}
-                  className="rounded-none p-0.5 text-red-600 transition-colors hover:bg-red-500/20 dark:text-red-400"
+                  className="rounded p-0.5 text-red-600 transition-colors hover:bg-red-500/20 dark:text-red-400"
                   aria-label="Dismiss error"
                 >
                   <X className="h-3.5 w-3.5" aria-hidden="true" />

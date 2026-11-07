@@ -208,17 +208,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
         aria-labelledby="engine-settings-title"
         tabIndex={-1}
         onKeyDown={handleDialogKeyDown}
-        className="w-full max-w-lg overflow-hidden rounded-none border border-border bg-card shadow-2xl focus:outline-none"
+        className="w-full max-w-lg overflow-hidden rounded-lg border border-border bg-card shadow-xl focus:outline-none"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4 bg-muted/50">
           <div className="flex items-center gap-2">
             <Sliders className="h-4 w-4 text-primary" />
-            <h2 id="engine-settings-title" className="text-sm font-semibold text-foreground">Engine Settings &amp; Info</h2>
+            <h2 id="engine-settings-title" className="font-serif text-base font-semibold text-foreground">Engine Settings &amp; Info</h2>
           </div>
           <button
             onClick={onClose}
-            className="rounded-none p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Close settings"
           >
             <X className="h-4 w-4" />
@@ -228,7 +228,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
         {/* Content */}
         <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto text-xs">
           {/* Engine Status */}
-          <div className="rounded-none border border-border bg-muted/50 p-3.5 space-y-2">
+          <div className="rounded-lg border border-border bg-muted/50 p-3.5 space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-medium text-foreground flex items-center gap-1.5">
                 <Cpu className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -245,7 +245,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 rounded-none border border-destructive/50 bg-destructive/10 p-3 text-[11px] text-destructive">
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-[11px] text-red-700 dark:text-red-300">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
               <span>{error}</span>
             </div>
@@ -258,7 +258,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
             </h3>
 
             {/* Image captioning via OpenAI-compatible vision LLM */}
-            <div className="space-y-2.5 rounded-none border border-border bg-muted/50 p-3">
+            <div className="space-y-2.5 rounded-lg border border-border bg-muted/50 p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="h-3.5 w-3.5 text-primary" />
@@ -354,7 +354,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
             </div>
 
             {/* Audio transcription */}
-            <div className="space-y-2.5 rounded-none border border-border bg-muted/50 p-3">
+            <div className="space-y-2.5 rounded-lg border border-border bg-muted/50 p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <AudioLines className="h-3.5 w-3.5 text-accent" />
@@ -383,7 +383,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                       </span>
                     </p>
                   ) : (
-                    <p className="flex items-start gap-1.5 text-destructive">
+                    <p className="flex items-start gap-1.5 text-red-700 dark:text-red-300">
                       <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
                       <span>
                         Missing Python packages (SpeechRecognition, pydub). Run{' '}
@@ -419,7 +419,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
           </div>
 
           {/* Local Server info */}
-          <div className="rounded-none border border-border bg-muted/50 p-3 text-[11px] text-muted-foreground flex items-center justify-between">
+          <div className="rounded-lg border border-border bg-muted/50 p-3 text-[11px] text-muted-foreground flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
               Local Endpoint:

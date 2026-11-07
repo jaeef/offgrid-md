@@ -4,112 +4,117 @@
    (toggled by the sun/moon button), NOT the OS color-scheme setting. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Self-hosted faces (offline product — no external font hosts) */
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/newsreader-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: italic;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/newsreader-italic-latin.woff2') format('woff2');
+}
+
+/* Editorial/paper world: warm paper ground, ink text, ink-blue actions,
+   ochre highlights, hairline stone borders, soft diffused depth. */
 :root {
-  --background: rgb(255, 255, 255);
-  --foreground: rgb(0, 0, 0);
-  --card: rgb(255, 255, 255);
-  --card-foreground: rgb(0, 0, 0);
-  --popover: rgb(255, 255, 255);
-  --popover-foreground: rgb(0, 0, 0);
-  --primary: rgb(219, 0, 0);
+  --background: rgb(250, 249, 247);
+  --foreground: rgb(28, 25, 23);
+  --card: rgb(255, 254, 251);
+  --card-foreground: rgb(28, 25, 23);
+  --popover: rgb(255, 254, 251);
+  --popover-foreground: rgb(28, 25, 23);
+  --primary: rgb(30, 64, 175);
   --primary-foreground: rgb(255, 255, 255);
-  --secondary: rgb(0, 0, 0);
-  --secondary-foreground: rgb(255, 255, 255);
-  --muted: rgb(245, 245, 245);
-  --muted-foreground: rgb(102, 102, 102);
-  --accent: rgb(255, 191, 0);
-  --accent-foreground: rgb(0, 0, 0);
-  --destructive: rgb(204, 0, 0);
+  --secondary: rgb(240, 238, 234);
+  --secondary-foreground: rgb(28, 25, 23);
+  --muted: rgb(243, 241, 237);
+  --muted-foreground: rgb(87, 83, 78);
+  --accent: rgb(161, 98, 7);
+  --accent-foreground: rgb(255, 255, 255);
+  --destructive: rgb(220, 38, 38);
   --destructive-foreground: rgb(255, 255, 255);
-  --border: rgb(0, 0, 0);
-  --input: rgb(255, 255, 255);
-  --ring: rgb(230, 0, 0);
-  --chart-1: rgb(0, 0, 0);
-  --chart-2: rgb(230, 0, 0);
-  --chart-3: rgb(255, 191, 0);
-  --chart-4: rgb(71, 107, 71);
-  --chart-5: rgb(143, 88, 61);
-  --sidebar: rgb(250, 250, 250);
-  --sidebar-foreground: rgb(0, 0, 0);
-  --sidebar-primary: rgb(230, 0, 0);
+  --border: rgb(231, 229, 228);
+  --input: rgb(214, 211, 209);
+  --ring: rgb(30, 64, 175);
+  --chart-1: rgb(30, 64, 175);
+  --chart-2: rgb(161, 98, 7);
+  --chart-3: rgb(85, 96, 82);
+  --chart-4: rgb(161, 92, 63);
+  --chart-5: rgb(120, 116, 110);
+  --sidebar: rgb(245, 243, 239);
+  --sidebar-foreground: rgb(28, 25, 23);
+  --sidebar-primary: rgb(30, 64, 175);
   --sidebar-primary-foreground: rgb(255, 255, 255);
-  --sidebar-accent: rgb(230, 230, 230);
-  --sidebar-accent-foreground: rgb(0, 0, 0);
-  --sidebar-border: rgb(0, 0, 0);
-  --sidebar-ring: rgb(230, 0, 0);
+  --sidebar-accent: rgb(236, 234, 228);
+  --sidebar-accent-foreground: rgb(28, 25, 23);
+  --sidebar-border: rgb(231, 229, 228);
+  --sidebar-ring: rgb(30, 64, 175);
   --font-sans: 'Inter', system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Courier New', monospace;
-  --radius: 0px;
-  --shadow-x: 3px;
-  --shadow-y: 3px;
-  --shadow-blur: 0px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 1;
-  --shadow-color: hsl(0, 0%, 0%);
-  --shadow-2xs: 3px 3px 0px 0px hsl(0 0% 0% / 0.5);
-  --shadow-xs: 3px 3px 0px 0px hsl(0 0% 0% / 0.5);
-  --shadow-sm: 3px 3px 0px 0px hsl(0 0% 0% / 1), 3px 1px 2px -1px hsl(0 0% 0% / 1);
-  --shadow: 3px 3px 0px 0px hsl(0 0% 0% / 1), 3px 1px 2px -1px hsl(0 0% 0% / 1);
-  --shadow-md: 3px 3px 0px 0px hsl(0 0% 0% / 1), 3px 2px 4px -1px hsl(0 0% 0% / 1);
-  --shadow-lg: 3px 3px 0px 0px hsl(0 0% 0% / 1), 3px 4px 6px -1px hsl(0 0% 0% / 1);
-  --shadow-xl: 3px 3px 0px 0px hsl(0 0% 0% / 1), 3px 8px 10px -1px hsl(0 0% 0% / 1);
-  --shadow-2xl: 3px 3px 0px 0px hsl(0 0% 0% / 2.5);
-  --tracking-normal: -0.02em;
-  --spacing: 0.25rem;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
+  --radius: 10px;
+  --shadow-2xs: 0 1px 2px rgb(28 25 23 / 0.05);
+  --shadow-xs: 0 1px 2px rgb(28 25 23 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(28 25 23 / 0.07), 0 1px 1px -1px rgb(28 25 23 / 0.06);
+  --shadow: 0 1px 3px rgb(28 25 23 / 0.09), 0 1px 2px -1px rgb(28 25 23 / 0.07);
+  --shadow-md: 0 4px 8px -2px rgb(28 25 23 / 0.10), 0 2px 4px -2px rgb(28 25 23 / 0.06);
+  --shadow-lg: 0 12px 24px -6px rgb(28 25 23 / 0.12), 0 4px 8px -4px rgb(28 25 23 / 0.08);
+  --shadow-xl: 0 24px 48px -12px rgb(28 25 23 / 0.16), 0 8px 16px -8px rgb(28 25 23 / 0.08);
+  --shadow-2xl: 0 32px 64px -16px rgb(28 25 23 / 0.22);
+  --tracking-normal: 0em;
 }
 
 .dark {
-  --background: rgb(0, 0, 0);
-  --foreground: rgb(255, 255, 255);
-  --card: rgb(10, 10, 10);
-  --card-foreground: rgb(255, 255, 255);
-  --popover: rgb(10, 10, 10);
-  --popover-foreground: rgb(255, 255, 255);
-  --primary: rgb(255, 0, 0);
-  --primary-foreground: rgb(255, 255, 255);
-  --secondary: rgb(255, 255, 255);
-  --secondary-foreground: rgb(0, 0, 0);
-  --muted: rgb(31, 31, 31);
-  --muted-foreground: rgb(179, 179, 179);
-  --accent: rgb(255, 198, 26);
-  --accent-foreground: rgb(0, 0, 0);
-  --destructive: rgb(255, 51, 51);
+  --background: rgb(28, 25, 23);
+  --foreground: rgb(245, 245, 244);
+  --card: rgb(41, 37, 36);
+  --card-foreground: rgb(245, 245, 244);
+  --popover: rgb(41, 37, 36);
+  --popover-foreground: rgb(245, 245, 244);
+  --primary: rgb(147, 197, 253);
+  --primary-foreground: rgb(23, 37, 84);
+  --secondary: rgb(54, 48, 46);
+  --secondary-foreground: rgb(245, 245, 244);
+  --muted: rgb(49, 45, 43);
+  --muted-foreground: rgb(168, 162, 158);
+  --accent: rgb(212, 160, 23);
+  --accent-foreground: rgb(28, 25, 23);
+  --destructive: rgb(220, 38, 38);
   --destructive-foreground: rgb(255, 255, 255);
-  --border: rgb(255, 255, 255);
-  --input: rgb(0, 0, 0);
-  --ring: rgb(255, 0, 0);
-  --chart-1: rgb(255, 255, 255);
-  --chart-2: rgb(255, 0, 0);
-  --chart-3: rgb(255, 198, 26);
-  --chart-4: rgb(98, 132, 98);
-  --chart-5: rgb(166, 115, 89);
-  --sidebar: rgb(5, 5, 5);
-  --sidebar-foreground: rgb(255, 255, 255);
-  --sidebar-primary: rgb(255, 0, 0);
-  --sidebar-primary-foreground: rgb(255, 255, 255);
-  --sidebar-accent: rgb(38, 38, 38);
-  --sidebar-accent-foreground: rgb(255, 255, 255);
-  --sidebar-border: rgb(255, 255, 255);
-  --sidebar-ring: rgb(255, 0, 0);
+  --border: rgb(68, 64, 60);
+  --input: rgb(87, 83, 78);
+  --ring: rgb(147, 197, 253);
+  --chart-1: rgb(147, 197, 253);
+  --chart-2: rgb(212, 160, 23);
+  --chart-3: rgb(124, 154, 120);
+  --chart-4: rgb(208, 138, 99);
+  --chart-5: rgb(168, 162, 158);
+  --sidebar: rgb(23, 20, 18);
+  --sidebar-foreground: rgb(245, 245, 244);
+  --sidebar-primary: rgb(147, 197, 253);
+  --sidebar-primary-foreground: rgb(23, 37, 84);
+  --sidebar-accent: rgb(54, 48, 46);
+  --sidebar-accent-foreground: rgb(245, 245, 244);
+  --sidebar-border: rgb(68, 64, 60);
+  --sidebar-ring: rgb(147, 197, 253);
   --font-sans: 'Inter', system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Courier New', monospace;
-  --radius: 0px;
-  --shadow-x: 3px;
-  --shadow-y: 3px;
-  --shadow-blur: 0px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 1;
-  --shadow-color: hsl(0, 0%, 100%);
-  --shadow-2xs: 3px 3px 0px 0px hsl(0 0% 100% / 0.5);
-  --shadow-xs: 3px 3px 0px 0px hsl(0 0% 100% / 0.5);
-  --shadow-sm: 3px 3px 0px 0px hsl(0 0% 100% / 0.25), 3px 1px 2px -1px hsl(0 0% 100% / 0.25);
-  --shadow: 3px 3px 0px 0px hsl(0 0% 100% / 0.25), 3px 1px 2px -1px hsl(0 0% 100% / 0.25);
-  --shadow-md: 3px 3px 0px 0px hsl(0 0% 100% / 0.25), 3px 2px 4px -1px hsl(0 0% 100% / 0.25);
-  --shadow-lg: 3px 3px 0px 0px hsl(0 0% 100% / 0.25), 3px 4px 6px -1px hsl(0 0% 100% / 0.25);
-  --shadow-xl: 3px 3px 0px 0px hsl(0 0% 100% / 0.25), 3px 8px 10px -1px hsl(0 0% 100% / 0.25);
-  --shadow-2xl: 3px 3px 0px 0px hsl(0 0% 100% / 2.5);
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
+  --radius: 10px;
+  --shadow-2xs: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.40);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.45), 0 1px 1px -1px rgb(0 0 0 / 0.40);
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.50), 0 1px 2px -1px rgb(0 0 0 / 0.45);
+  --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.55), 0 2px 4px -2px rgb(0 0 0 / 0.40);
+  --shadow-lg: 0 12px 24px -6px rgb(0 0 0 / 0.60), 0 4px 8px -4px rgb(0 0 0 / 0.45);
+  --shadow-xl: 0 24px 48px -12px rgb(0 0 0 / 0.65), 0 8px 16px -8px rgb(0 0 0 / 0.50);
+  --shadow-2xl: 0 32px 64px -16px rgb(0 0 0 / 0.70);
 }
 
 @theme inline {
@@ -234,34 +239,35 @@ code, pre, kbd {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(120, 120, 120, 0.3);
-  border-radius: 0;
+  background: rgba(120, 114, 108, 0.35);
+  border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 120, 120, 0.5);
+  background: rgba(120, 114, 108, 0.55);
 }
 
 /* Markdown Rendered Styling */
 .markdown-body {
   color: inherit;
-  line-height: 1.65;
+  line-height: 1.7;
   font-size: 0.95rem;
   overflow-wrap: break-word;
 }
 
 .markdown-body a {
-  color: #e60000;
+  color: #1e40af;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 
 .markdown-body a:hover {
-  color: #ff3b3b;
+  color: #1d4ed8;
 }
 
 .markdown-body img {
   max-width: 100%;
-  border-radius: 0;
+  border-radius: 10px;
   border: 1px solid var(--border);
   margin: 1rem 0;
 }
@@ -269,7 +275,7 @@ code, pre, kbd {
 .markdown-body hr {
   border: none;
   border-top: 1px solid var(--border);
-  margin: 1.5rem 0;
+  margin: 1.75rem 0;
 }
 
 .markdown-body strong {
@@ -277,63 +283,67 @@ code, pre, kbd {
 }
 
 html:not(.dark) .markdown-body pre {
-  background: #f5f5f5;
-  border-color: var(--border);
+  background: #1c1917;
+  border-color: transparent;
 }
 html:not(.dark) .markdown-body pre code {
-  color: #000000;
+  color: #f5f5f4;
 }
 html:not(.dark) .markdown-body code:not(pre code) {
-  background: rgba(0, 0, 0, 0.06);
-  color: #b00000;
+  background: rgba(161, 98, 7, 0.12);
+  color: #92400e;
 }
 html:not(.dark) .markdown-body blockquote {
-  color: #666666;
+  color: #78716c;
 }
 html:not(.dark) .markdown-body th {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(28, 25, 23, 0.04);
 }
 
 .markdown-body h1 {
-  font-size: 1.85rem;
-  font-weight: 700;
-  margin-top: 1.5rem;
+  font-family: var(--font-serif);
+  font-size: 1.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 1.75rem;
   margin-bottom: 0.75rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .markdown-body h2 {
-  font-size: 1.45rem;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
   margin-bottom: 0.5rem;
-  padding-bottom: 0.25rem;
+  padding-bottom: 0.3rem;
   border-bottom: 1px solid var(--border);
 }
 
 .markdown-body h3 {
-  font-size: 1.2rem;
+  font-family: var(--font-serif);
+  font-size: 1.22rem;
   font-weight: 600;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   margin-bottom: 0.4rem;
 }
 
 .markdown-body p {
   margin-top: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .markdown-body ul {
   list-style-type: disc;
   margin-left: 1.25rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .markdown-body ol {
   list-style-type: decimal;
   margin-left: 1.25rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .markdown-body li {
@@ -342,14 +352,14 @@ html:not(.dark) .markdown-body th {
 }
 
 .markdown-body blockquote {
-  border-left: 4px solid var(--primary);
-  padding-left: 1rem;
-  margin: 1rem 0;
+  border-left: 2px solid var(--border);
+  padding: 0.15rem 0 0.15rem 1.1rem;
+  margin: 1.25rem 0;
   color: var(--muted-foreground);
+  font-family: var(--font-serif);
   font-style: italic;
-  background: rgba(230, 0, 0, 0.05);
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
+  font-size: 1.04em;
+  background: transparent;
 }
 
 .markdown-body table {
@@ -368,48 +378,57 @@ html:not(.dark) .markdown-body th {
 }
 
 .markdown-body th {
-  background: rgba(120, 120, 120, 0.08);
+  background: rgba(120, 114, 108, 0.08);
   font-weight: 600;
 }
 
 .markdown-body tr:nth-child(even) {
-  background: rgba(120, 120, 120, 0.03);
+  background: rgba(120, 114, 108, 0.035);
 }
 
 .markdown-body code:not(pre code) {
-  background: rgba(120, 120, 120, 0.15);
+  background: rgba(120, 114, 108, 0.15);
   padding: 0.15rem 0.35rem;
   font-size: 0.85em;
-  color: #e60000;
+  color: #92400e;
 }
 
 .markdown-body pre {
-  background: #000000;
-  padding: 1rem;
+  background: #1c1917;
+  padding: 1rem 1.1rem;
   overflow-x: auto;
-  margin: 1rem 0;
-  border: 1px solid var(--border);
+  margin: 1.25rem 0;
+  border: none;
+  border-radius: 10px;
 }
 
 .markdown-body pre code {
   background: transparent;
   padding: 0;
   font-size: 0.88rem;
-  color: #f5f5f5;
+  color: #f5f5f4;
 }
 
-/* Readable brand colors on both themes (raw red/amber fail 4.5:1 as small text) */
+html.dark .markdown-body pre {
+  background: #171412;
+}
+html.dark .markdown-body code:not(pre code) {
+  background: rgba(212, 160, 23, 0.14);
+  color: #e3b341;
+}
+
+/* Accessible text variants over the paper/charcoal grounds */
 .text-primary-readable {
-  color: #b30000;
+  color: #1e40af;
 }
 .dark .text-primary-readable {
-  color: #ff6b6b;
+  color: #93c5fd;
 }
 .text-accent-readable {
-  color: #7a5c00;
+  color: #92400e;
 }
 .dark .text-accent-readable {
-  color: var(--accent);
+  color: #d4a017;
 }
 .text-success-readable {
   color: #047857;
@@ -419,11 +438,11 @@ html:not(.dark) .markdown-body th {
 }
 
 html.dark .markdown-body a {
-  color: #ff6b6b;
+  color: #93c5fd;
 }
 html.dark .markdown-body a:hover {
-  color: #ff8a8a;
+  color: #bfdbfe;
 }
-html.dark .markdown-body code:not(pre code) {
-  color: #ff8a8a;
+html.dark .markdown-body blockquote {
+  color: #a8a29e;
 }

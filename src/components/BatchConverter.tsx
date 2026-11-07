@@ -206,7 +206,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
   return (
     <div className="flex flex-col gap-4 p-4 max-w-7xl mx-auto lg:h-[calc(100vh-4.5rem)]">
       {/* Top Bar: Directory scanning & Output config */}
-      <div className="rounded-none border border-border bg-card/60 p-4 backdrop-blur-sm">
+      <div className="rounded-lg border border-border bg-card p-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           {/* Input Folder Path */}
           <div className="md:col-span-6">
@@ -311,12 +311,12 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
       <div className="grid flex-1 grid-cols-1 lg:grid-cols-12 gap-4 lg:overflow-hidden">
         {/* Table List (Left 7 Cols if preview open, 12 if not) */}
         <div
-          className={`flex flex-col rounded-none border border-border bg-card/60 backdrop-blur-sm overflow-hidden ${
+          className={`flex flex-col rounded-lg border border-border bg-card overflow-hidden ${
             activePreviewFile ? 'lg:col-span-7' : 'lg:col-span-12'
           }`}
         >
-          <div className="flex items-center justify-between border-b border-border bg-card/80 px-4 py-2.5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+          <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5">
+            <h3 className="font-serif text-sm font-semibold text-foreground">
               Queued Documents ({files.length})
             </h3>
             {files.length > 0 && (
@@ -338,7 +338,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
             ) : (
               <table className="w-full min-w-[560px] text-left text-xs">
                 <caption className="sr-only">Documents queued for batch conversion with type, size, status, and actions</caption>
-                <thead className="sticky top-0 border-b border-border bg-background/80 font-mono text-[11px] text-muted-foreground backdrop-blur-sm">
+                <thead className="sticky top-0 border-b border-border bg-background/90 text-[11px] font-medium uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
                   <tr>
                     <th scope="col" className="py-2.5 px-4">Filename</th>
                     <th scope="col" className="py-2.5 px-3">Type</th>
@@ -365,7 +365,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
                       </td>
 
                       <td className="py-2.5 px-3">
-                        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground uppercase">
+                        <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground uppercase">
                           {file.extension.replace('.', '')}
                         </span>
                       </td>
