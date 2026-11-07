@@ -16,6 +16,91 @@ interface MarkdownViewerProps {
   onMarkdownChange?: (newMarkdown: string) => void
 }
 
+// Fast single-pass text stats (0 heap allocations, avoids regex catastrophic backtracking or giant string arrays)
+function calcFastStats(text: string) {
+  if (!text) return { words: 0, characters: 0, lines: 0, tokens: 0 }
+  let words = 0
+  let lines = 1
+  let inWord = false
+  const len = text.length
+
+  for (let i = 0; i < len; i++) {
+    const ch = text.charCodeAt(i)
+    if (ch === 10) lines++
+    if (ch > 32) {
+      if (!inWord) {
+        words++
+        inWord = true
+      }
+    } else {
+      inWord = false
+    }
+  }
+
+  return {
+    words,
+    characters: len,
+    lines,
+    tokens: Math.floor(len / 4)
+  }
+}
+
+// Prepares markdown for smooth preview rendering by capping giant tables to 100 rows.
+// This prevents remark-gfm's parser from freezing the browser thread with O(N^2) tokenization.
+function preparePreviewMarkdown(markdown: string, maxTableRows = 100): string {
+  if (!markdown) return ''
+  let out = ''
+  let inTable = false
+  let tableRowCount = 0
+  let skippedRows = 0
+  let pos = 0
+  const len = markdown.length
+
+  while (pos < len) {
+    let nextNewline = markdown.indexOf('\n', pos)
+    if (nextNewline === -1) nextNewline = len
+    const line = markdown.slice(pos, nextNewline)
+    const trimmed = line.trim()
+    const isTableRow = trimmed.startsWith('|')
+
+    if (isTableRow) {
+      if (!inTable) {
+        inTable = true
+        tableRowCount = 0
+        skippedRows = 0
+        out += line + '\n'
+      } else {
+        tableRowCount++
+        if (tableRowCount <= maxTableRows + 1) { // +1 for delimiter row
+          out += line + '\n'
+        } else {
+          skippedRows++
+        }
+      }
+    } else {
+      if (inTable) {
+        if (skippedRows > 0) {
+          const totalRows = tableRowCount - 1
+          out += `\n> 📊 **Table preview capped:** showing first ${maxTableRows} of ${totalRows.toLocaleString()} rows to prevent browser freeze. Complete data is preserved in the **Markdown** tab and **Export .md**.\n\n`
+        }
+        inTable = false
+        tableRowCount = 0
+        skippedRows = 0
+      }
+      out += line + (nextNewline < len ? '\n' : '')
+    }
+
+    pos = nextNewline + 1
+  }
+
+  if (inTable && skippedRows > 0) {
+    const totalRows = tableRowCount - 1
+    out += `\n> 📊 **Table preview capped:** showing first ${maxTableRows} of ${totalRows.toLocaleString()} rows to prevent browser freeze. Complete data is preserved in the **Markdown** tab and **Export .md**.\n`
+  }
+
+  return out
+}
+
 export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   markdown,
   filename = 'document.md',
@@ -29,14 +114,13 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   // Backend tokens = chars/4 heuristic — keep same formula client-side so edit + convert agree.
   const displayStats = React.useMemo(() => {
     if (!markdown) return stats
-    const words = markdown ? markdown.split(/\s+/).filter(Boolean).length : 0
-    return {
-      words,
-      characters: markdown.length,
-      lines: markdown ? markdown.split('\n').length : 0,
-      tokens: markdown ? Math.floor(markdown.length / 4) : 0
-    }
+    return calcFastStats(markdown)
   }, [markdown, stats])
+
+  // Memoize preview markdown so remark-gfm parser never hangs on giant tables
+  const previewMarkdown = React.useMemo(() => {
+    return preparePreviewMarkdown(markdown, 100)
+  }, [markdown])
 
   const handleCopy = async () => {
     if (!markdown) return
@@ -205,7 +289,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
             {(viewMode === 'rendered' || viewMode === 'split') && (
               <div className={`min-h-[40vh] overflow-y-auto p-6 markdown-body lg:min-h-0 lg:h-full ${viewMode === 'split' ? 'w-1/2' : 'w-full'}`}>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {markdown}
+                  {previewMarkdown}
                 </ReactMarkdown>
               </div>
             )}

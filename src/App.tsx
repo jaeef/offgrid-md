@@ -23,7 +23,7 @@ export const App: React.FC = () => {
   const checkHealth = useCallback(async () => {
     if (document.hidden) return
     const ctrl = new AbortController()
-    const timeout = setTimeout(() => ctrl.abort(), 5000)
+    const timeout = setTimeout(() => ctrl.abort(), 10000)
     try {
       const res = await fetch('/api/health', { signal: ctrl.signal })
       if (res.ok) {

@@ -1,4 +1,5 @@
 import io
+import asyncio
 import zipfile
 from typing import List, Optional
 from pathlib import Path
@@ -114,7 +115,7 @@ async def convert_upload(files: List[UploadFile] = File(...)):
                     "error": f"File too large: {file.filename}"
                 })
                 continue
-            res = service.convert_stream(content, file.filename or "uploaded_file")
+            res = await asyncio.to_thread(service.convert_stream, content, file.filename or "uploaded_file")
             res["status"] = "success"
             results.append(res)
         except Exception as e:
