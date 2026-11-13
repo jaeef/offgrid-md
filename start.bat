@@ -5,6 +5,14 @@ color 0B
 
 cd /d "%~dp0"
 
+rem ponytail: only checks the default port; app.py also scans the fallback ports before starting.
+curl.exe -s -f -m 2 http://127.0.0.1:7860/api/health >nul 2>nul
+if %ERRORLEVEL% equ 0 (
+    echo MarkItDown Studio is already running - opening http://127.0.0.1:7860
+    start "" http://127.0.0.1:7860
+    exit /b 0
+)
+
 echo =======================================================
 echo    Microsoft MarkItDown Studio - Offline Converter
 echo =======================================================

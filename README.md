@@ -28,7 +28,7 @@ pip install -r backend\requirements.txt
 python backend\app.py        # → http://127.0.0.1:7860
 
 # frontend (hot reload)
-npm install && npm run dev   # → http://localhost:5173 (proxies /api → :7860)
+npm install && npm run dev   # → http://localhost:5173, also starts the engine on :7860 (reuses it if already running)
 ```
 
 ## Features

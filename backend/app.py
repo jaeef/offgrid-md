@@ -1,4 +1,5 @@
 import io
+import os
 import asyncio
 import zipfile
 from typing import List, Optional
@@ -239,6 +240,21 @@ for dist_dir in dist_dirs:
             return FileResponse(str(dist_dir / "index.html"), headers=no_cache)
         break
 
+def _running_engine(preferred: int = 7860) -> Optional[str]:
+    """URL of an engine already serving on our port range, so we never start a second one."""
+    import json
+    import urllib.request
+    for port in range(preferred, preferred + 20):
+        url = f"http://127.0.0.1:{port}"
+        try:
+            with urllib.request.urlopen(f"{url}/api/health", timeout=0.5) as r:
+                if json.load(r).get("engine") == "Microsoft MarkItDown":
+                    return url
+        except Exception:
+            continue
+    return None
+
+
 def _pick_port(preferred: int = 7860) -> int:
     import socket
     for port in range(preferred, preferred + 20):
@@ -256,6 +272,13 @@ if __name__ == "__main__":
     import webbrowser
     import uvicorn
 
+    existing = _running_engine(7860)
+    if existing:
+        print(f"MarkItDown Studio is already running at {existing} - opening it.")
+        if not os.environ.get("MARKITDOWN_NO_BROWSER"):
+            webbrowser.open(existing)
+        sys.exit(0)
+
     port = _pick_port(7860)
     url = f"http://127.0.0.1:{port}"
 
@@ -265,5 +288,6 @@ if __name__ == "__main__":
     print("=" * 55)
     print()
 
-    threading.Timer(1.5, lambda: webbrowser.open(url)).start()
+    if not os.environ.get("MARKITDOWN_NO_BROWSER"):
+        threading.Timer(1.5, lambda: webbrowser.open(url)).start()
     uvicorn.run(app, host="127.0.0.1", port=port)
