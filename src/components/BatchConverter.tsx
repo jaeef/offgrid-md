@@ -55,7 +55,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
 
   // Directory scanning
   const handleScanDirectory = async () => {
-    if (!folderPath.trim()) return
+    if (!folderPath.trim() || isConvertingAll) return
     setIsScanning(true)
     setScanError(null)
 
@@ -93,9 +93,10 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
   }
 
   // Convert one specific file in batch list
-  const convertSingleFileInBatch = async (item: BatchFileItem, index: number) => {
+  // Rows are matched by path, not index: the list can be replaced mid-flight.
+  const convertSingleFileInBatch = async (item: BatchFileItem) => {
     setFiles((prev) =>
-      prev.map((f, i) => (i === index ? { ...f, status: 'converting' } : f))
+      prev.map((f) => (f.path === item.path ? { ...f, status: 'converting' } : f))
     )
 
     try {
@@ -111,8 +112,8 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
       }
 
       setFiles((prev) =>
-        prev.map((f, i) =>
-          i === index
+        prev.map((f) =>
+          f.path === item.path
             ? {
                 ...f,
                 status: 'success',
@@ -126,8 +127,8 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
     } catch (err: any) {
       const message = engineErrorMessage(err)
       setFiles((prev) =>
-        prev.map((f, i) =>
-          i === index
+        prev.map((f) =>
+          f.path === item.path
             ? {
                 ...f,
                 status: 'error',
@@ -148,7 +149,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
     for (let i = 0; i < snapshot.length; i++) {
       const item = snapshot[i]
       if (item.status === 'success') continue
-      await convertSingleFileInBatch(item, i)
+      await convertSingleFileInBatch(item)
     }
 
     setIsConvertingAll(false)
@@ -172,7 +173,10 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
         body: JSON.stringify({ items: convertedItems })
       })
 
-      if (!response.ok) throw new Error('Failed to generate ZIP')
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.detail || 'Failed to generate ZIP')
+      }
 
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
@@ -233,7 +237,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
               </datalist>
               <Button
                 onClick={handleScanDirectory}
-                disabled={isScanning || !folderPath.trim()}
+                disabled={isScanning || isConvertingAll || !folderPath.trim()}
                 size="sm"
                 variant="outline"
                 className="shrink-0 border-border text-foreground text-xs font-semibold"
@@ -406,7 +410,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => convertSingleFileInBatch(file, idx)}
+                              onClick={() => convertSingleFileInBatch(file)}
                               className="h-6 border-border px-2 text-[11px] text-foreground"
                             >
                               Convert
@@ -416,7 +420,7 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => convertSingleFileInBatch(file, idx)}
+                              onClick={() => convertSingleFileInBatch(file)}
                               className="h-6 border-destructive/50 px-2 text-[11px] text-red-600 dark:text-red-400 hover:bg-destructive/10"
                               title={file.error || 'Conversion failed'}
                             >

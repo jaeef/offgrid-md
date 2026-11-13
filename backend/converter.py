@@ -181,7 +181,8 @@ class FastExcelConverter(DocumentConverter):
             if isinstance(v, float) and v.is_integer():
                 return str(int(v))
             if isinstance(v, (datetime.date, datetime.datetime)):
-                return v.strftime("%Y-%m-%d")
+                has_time = isinstance(v, datetime.datetime) and v.time() != datetime.time(0)
+                return v.strftime("%Y-%m-%d %H:%M:%S" if has_time else "%Y-%m-%d")
             return str(v).replace("|", "\\|").replace("\r\n", "<br>").replace("\n", "<br>")
 
         for sheet_name, df in sheets.items():

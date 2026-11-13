@@ -25,7 +25,7 @@ interface SingleConverterProps {
 const SUPPORTED_EXTENSIONS = new Set([
   '.pdf', '.docx', '.doc', '.pptx', '.ppt', '.xlsx', '.xls',
   '.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif',
-  '.mp3', '.wav', '.m4a', '.ogg', '.flac',
+  '.mp3', '.wav', '.m4a', '.mp4', '.ogg', '.flac',
   '.html', '.htm', '.xml', '.json', '.csv', '.tsv', '.txt', '.log', '.epub',
   '.zip'
 ])
@@ -219,7 +219,10 @@ export const SingleConverter: React.FC<SingleConverterProps> = ({
             <input
               type="file"
               ref={fileInputRef}
-              onChange={(e) => handleFileUpload(e.target.files)}
+              onChange={(e) => {
+                handleFileUpload(e.target.files)
+                e.target.value = '' // let the same file be picked again
+              }}
               className="hidden"
               aria-hidden="true"
               tabIndex={-1}
