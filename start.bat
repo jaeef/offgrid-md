@@ -15,8 +15,7 @@ where py >nul 2>nul
 if %ERRORLEVEL% equ 0 set "PYEXE=py -3"
 
 if not defined PYEXE (
-    where python >nul 2>nul
-    if %ERRORLEVEL% equ 0 set "PYEXE=python"
+    where python >nul 2>nul && set "PYEXE=python"
 )
 
 if not defined PYEXE (
