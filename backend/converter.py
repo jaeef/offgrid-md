@@ -124,6 +124,61 @@ def _repair_sheetview_show_zeroes(file_stream: BinaryIO, start_pos: int = 0) -> 
     return repaired_stream
 
 
+def _reflow(block: str) -> str:
+    """Rejoin a PDF text block's wrapped lines into one paragraph."""
+    # ponytail: lowercase-only de-hyphenation; a line-broken "well-known" becomes "wellknown" (rare in body text)
+    block = re.sub(r"(?<=[a-z])-\n(?=[a-z])", "", block)
+    return re.sub(r"\s+", " ", block).strip()
+
+
+class ReadingOrderPdfConverter(DocumentConverter):
+    """Text PDFs via PyMuPDF paragraph blocks.
+
+    markitdown-ocr's PDF reader (pdfplumber extract_text) reads each line straight
+    across both columns of a two-column page and drops spaces between tightly set
+    words; MarkItDown's built-in reader mistakes two-column prose for a form.
+    PyMuPDF keeps column order and real spacing, and is ~10x faster.
+
+    Returns None so the next converter (the OCR plugin) runs instead for scanned
+    PDFs, and for PDFs with images when LLM OCR is on (keeps figure OCR working).
+    """
+
+    def __init__(self, ocr_enabled: bool = False):
+        super().__init__()
+        self.ocr_enabled = ocr_enabled
+
+    def accepts(self, file_stream: BinaryIO, stream_info: StreamInfo, **kwargs: Any) -> bool:
+        ext = (stream_info.extension or "").lower()
+        mimetype = (stream_info.mimetype or "").lower()
+        return ext == ".pdf" or mimetype in ("application/pdf", "application/x-pdf")
+
+    def convert(self, file_stream: BinaryIO, stream_info: StreamInfo, **kwargs: Any) -> Optional[DocumentConverterResult]:
+        try:
+            import pymupdf
+        except ImportError:
+            return None
+
+        start = file_stream.tell()
+        data = file_stream.read()
+        file_stream.seek(start)  # next converter needs the stream intact if we pass
+
+        flags = pymupdf.TEXTFLAGS_BLOCKS & ~pymupdf.TEXT_PRESERVE_LIGATURES  # "ﬁ" -> "fi"
+        pages = []
+        with pymupdf.open(stream=data, filetype="pdf") as doc:
+            if self.ocr_enabled and any(page.get_images() for page in doc):
+                return None
+            for num, page in enumerate(doc, 1):
+                # block = (x0, y0, x1, y1, text, block_no, type); type 0 = text
+                paras = [_reflow(b[4]) for b in page.get_text("blocks", flags=flags) if b[6] == 0]
+                paras = [p for p in paras if p]
+                if paras:
+                    pages.append(f"## Page {num}\n\n" + "\n\n".join(paras))
+
+        if sum(len(p) for p in pages) < 50:
+            return None  # scanned / image-only PDF
+        return DocumentConverterResult(markdown="\n\n".join(pages))
+
+
 class FastExcelConverter(DocumentConverter):
     """High-performance XLSX and XLS converter.
 
@@ -301,6 +356,8 @@ class MarkItDownService:
         # Register our high-performance FastExcelConverter with highest priority (-10)
         # to ensure spreadsheets convert ~100-300x faster and don't freeze the browser.
         self._md.register_converter(FastExcelConverter(ocr_service=ocr_service), priority=-10)
+        # Ahead of markitdown-ocr's PDF reader (priority -1); see ReadingOrderPdfConverter.
+        self._md.register_converter(ReadingOrderPdfConverter(ocr_enabled=ocr_service is not None), priority=-5)
 
     def update_settings(
         self,

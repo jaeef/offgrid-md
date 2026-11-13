@@ -15,7 +15,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Badge } from './ui/badge'
 import { MarkdownViewer } from './MarkdownViewer'
-import { formatBytes, getRecentPaths, pushRecentPath, engineErrorMessage } from '@/lib/utils'
+import { formatBytes, getRecentPaths, pushRecentPath, engineErrorMessage, getFrontMatterEnabled, withFrontMatter } from '@/lib/utils'
 
 interface BatchFileItem {
   name: string
@@ -157,11 +157,12 @@ export const BatchConverter: React.FC<BatchConverterProps> = ({
 
   // Export all converted files as a single ZIP
   const handleExportZip = async () => {
+    const frontMatter = getFrontMatterEnabled()
     const convertedItems = files
       .filter((f) => f.status === 'success' && f.markdown)
       .map((f) => ({
         filename: f.name,
-        markdown: f.markdown!
+        markdown: frontMatter ? withFrontMatter(f.markdown!, f.name, f.path) : f.markdown!
       }))
 
     if (convertedItems.length === 0) return

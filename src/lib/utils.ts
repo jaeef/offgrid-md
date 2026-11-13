@@ -50,3 +50,69 @@ export function pushRecentPath(path: string): void {
     /* storage unavailable — non-fatal */
   }
 }
+
+const FRONT_MATTER_KEY = 'offgrid.frontMatter'
+
+export function getFrontMatterEnabled(): boolean {
+  try {
+    return localStorage.getItem(FRONT_MATTER_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setFrontMatterEnabled(on: boolean): void {
+  try {
+    localStorage.setItem(FRONT_MATTER_KEY, on ? '1' : '0')
+  } catch {
+    /* storage unavailable — non-fatal */
+  }
+}
+
+// Obsidian-style YAML header. JSON string escaping is valid YAML double-quoted syntax,
+// so odd filenames (quotes, colons) can't break the block.
+export function withFrontMatter(markdown: string, filename: string, source = filename): string {
+  if (/^---\r?\n/.test(markdown)) return markdown // already has front-matter
+  const title = filename.replace(/\.[^/.]+$/, '')
+  return [
+    '---',
+    `title: ${JSON.stringify(title)}`,
+    `source: ${JSON.stringify(source)}`,
+    `converted_at: ${new Date().toISOString()}`,
+    '---',
+    '',
+    markdown
+  ].join('\n')
+}
+
+// Native "Save as" dialog (Chrome/Edge) remembers the last folder, e.g. an Obsidian vault.
+// Falls back to a plain download elsewhere. Returns false if the user cancelled.
+export async function saveTextFile(content: string, suggestedName: string): Promise<boolean> {
+  const picker = (window as unknown as { showSaveFilePicker?: (o: object) => Promise<FileSystemFileHandle> })
+    .showSaveFilePicker
+  if (picker) {
+    try {
+      const handle = await picker({
+        suggestedName,
+        id: 'markdown-save',
+        types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md'] } }]
+      })
+      const writable = await handle.createWritable()
+      await writable.write(content)
+      await writable.close()
+      return true
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return false
+      // any other picker failure → fall through to a normal download
+    }
+  }
+  const url = URL.createObjectURL(new Blob([content], { type: 'text/markdown;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = suggestedName
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  return true
+}

@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Copy, Check, Download, FileCode, Eye, Columns, UploadCloud, HardDrive, ClipboardCopy } from 'lucide-react'
 import { Button } from './ui/button'
+import { Switch } from './ui/switch'
+import { getFrontMatterEnabled, setFrontMatterEnabled, withFrontMatter, saveTextFile } from '@/lib/utils'
 
 interface MarkdownViewerProps {
   markdown: string
@@ -81,7 +83,7 @@ function preparePreviewMarkdown(markdown: string, maxTableRows = 100): string {
       if (inTable) {
         if (skippedRows > 0) {
           const totalRows = tableRowCount - 1
-          out += `\n> 📊 **Table preview capped:** showing first ${maxTableRows} of ${totalRows.toLocaleString()} rows to prevent browser freeze. Complete data is preserved in the **Markdown** tab and **Export .md**.\n\n`
+          out += `\n> 📊 **Table preview capped:** showing first ${maxTableRows} of ${totalRows.toLocaleString()} rows to prevent browser freeze. Complete data is preserved in the **Markdown** tab and **Save .md**.\n\n`
         }
         inTable = false
         tableRowCount = 0
@@ -95,7 +97,7 @@ function preparePreviewMarkdown(markdown: string, maxTableRows = 100): string {
 
   if (inTable && skippedRows > 0) {
     const totalRows = tableRowCount - 1
-    out += `\n> 📊 **Table preview capped:** showing first ${maxTableRows} of ${totalRows.toLocaleString()} rows to prevent browser freeze. Complete data is preserved in the **Markdown** tab and **Export .md**.\n`
+    out += `\n> 📊 **Table preview capped:** showing first ${maxTableRows} of ${totalRows.toLocaleString()} rows to prevent browser freeze. Complete data is preserved in the **Markdown** tab and **Save .md**.\n`
   }
 
   return out
@@ -109,6 +111,16 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'rendered' | 'source' | 'split'>('rendered')
   const [copied, setCopied] = useState(false)
+  // ponytail: read once per viewer; a toggle in another tab shows up after reload (ZIP export always reads the latest)
+  const [frontMatter, setFrontMatter] = useState(getFrontMatterEnabled)
+
+  const toggleFrontMatter = (on: boolean) => {
+    setFrontMatter(on)
+    setFrontMatterEnabled(on)
+  }
+
+  // Front-matter is added on the way out only, so the editor/preview stay clean and edits never duplicate it.
+  const output = () => (frontMatter ? withFrontMatter(markdown, filename) : markdown)
 
   // Display stats must match current markdown, not stale backend props.
   // Backend tokens = chars/4 heuristic — keep same formula client-side so edit + convert agree.
@@ -125,7 +137,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   const handleCopy = async () => {
     if (!markdown) return
     try {
-      await navigator.clipboard.writeText(markdown)
+      await navigator.clipboard.writeText(output())
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
@@ -133,19 +145,9 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
     }
   }
 
-  const handleDownload = () => {
+  const handleSave = async () => {
     if (!markdown) return
-    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    // Ensure .md extension
-    const baseName = filename.replace(/\.[^/.]+$/, '')
-    a.download = `${baseName}.md`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    await saveTextFile(output(), `${filename.replace(/\.[^/.]+$/, '')}.md`)
   }
 
   return (
@@ -211,6 +213,14 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
             </div>
           )}
 
+          <label
+            className="flex items-center gap-1.5 text-xs text-muted-foreground"
+            title="Add a YAML header (title, source, converted_at) when copying or saving. Obsidian-ready."
+          >
+            <Switch checked={frontMatter} onCheckedChange={toggleFrontMatter} aria-label="Add front-matter on copy and save" />
+            <span>Front-matter</span>
+          </label>
+
           <Button
             variant="outline"
             size="sm"
@@ -233,12 +243,12 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
 
           <Button
             size="sm"
-            onClick={handleDownload}
+            onClick={handleSave}
             disabled={!markdown}
             className="h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-sm"
           >
             <Download className="h-3.5 w-3.5 mr-1" />
-            <span>Export .md</span>
+            <span>Save .md</span>
           </Button>
         </div>
       </div>
@@ -277,7 +287,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
                   onChange={(e) => onMarkdownChange?.(e.target.value)}
                   readOnly={!onMarkdownChange}
                   aria-readonly={!onMarkdownChange}
-                  title={onMarkdownChange ? undefined : 'Read-only preview — Export .md or Copy to edit elsewhere'}
+                  title={onMarkdownChange ? undefined : 'Read-only preview — Save .md or Copy to edit elsewhere'}
                   className={`min-h-[35vh] w-full resize-none bg-transparent font-mono text-xs leading-relaxed text-foreground focus:outline-none focus:ring-2 focus:ring-ring selection:bg-primary/20 selection:text-foreground lg:min-h-0 lg:h-full ${onMarkdownChange ? '' : 'cursor-default'}`}
                   placeholder="Raw markdown..."
                   spellCheck={false}
